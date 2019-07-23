@@ -1,5 +1,6 @@
 # portal_files
 INPUT FILE
+
 To run the perl script you need an input files with the names of the projects
 
 
