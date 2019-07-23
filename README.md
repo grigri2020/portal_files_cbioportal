@@ -33,4 +33,4 @@ P-0000067-T01-WES       s_C_000138_T001_d
 P-0000086-T01-WES       s_C_58HT7F_M001_d
 
 
-
+Header/no header for the Tumor_id_mapping file  doesn’t matter.  
