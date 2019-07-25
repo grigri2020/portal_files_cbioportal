@@ -6,5 +6,8 @@ perl make_file_portal_JSON.pl Projects_input
 
 ==================== WAYS TO MAKE SURE IT RUNS ======================
 
-1. Make sure that the input JSON  file  has  the same name in the Projects_input file. 
-2. You  can specify  the full path to the  input JSOB  file. 
+1. Make sure the "Projects_input" file is tab-delimited duh!
+2. Make sure you do not add "Proj_" in the first column of the "Projects_input" file.
+3. Make sure that the "correct" JSON file name is used for the second column of the "Projects_input" file.
+4. Make sure that the input JSON  file  has  the same name in the Projects_input file. 
+5. You  can specify  the full path to the  input JSOB  file. 
