@@ -1,0 +1,10 @@
+To run and produce the files in the output folder run the script  "make_file_portal_JSON.pl" using the file  "Projects_input" as the input parameter as shown below:
+
+
+perl make_file_portal_JSON.pl Projects_input
+
+
+==================== WAYS TO MAKE SURE IT RUNS ======================
+
+1. Make sure that the input JSON  file  has  the same name in the Projects_input file. 
+2. You  can specify  the full path to the  input JSOB  file. 
