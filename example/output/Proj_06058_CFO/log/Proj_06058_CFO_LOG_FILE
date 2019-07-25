@@ -1,0 +1,49 @@
+Running Proj_06058_CFO at 24/6/119:17:23:27
+=================== Mutation file processing =====================
+
+Copied  MAF/mutation file from /ifs/res/taylorlab/chavans/roslin_2.4_deliveries/cs_deliveries/res_Proj_06058_CFO/Proj_06058_CFO_final_comb_ccs_022119.maf to  /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/input
+Replaced 2 CMO ids in the new file
+
+s_AML_GCT_2T1	P-0003533-T01-WES
+s_AML_GCT_2T3	P-0003533-T03-WES
+Replaced in /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/output/Proj_06058_CFO_final_comb_ccs_022119.maf_MAPPED:CMO IDs with DMP IDs
+Made new data_clinical_sample.txt file: /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/output/data_sample
+Made new data_clinical_patient.txt file: /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/output/data_patient
+=================== FACETS Gene Level call  processing =====================
+
+Copied  Gene level calls from /ifs/res/taylorlab/chavans/roslin_2.4_deliveries/cs_deliveries/all_genelevel//Proj_06058_CFO_ccs_filtered_genelevel_cna_043019.txt to  /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/input
+This project has 2 CMO IDS:
+	s_AML_GCT_2T1	s_AML_GCT_2T3
+Replaced 2 CMO ids in the new file
+
+s_AML_GCT_2T1	P-0003533-T01-WES
+s_AML_GCT_2T3	P-0003533-T03-WES
+Replaced in /ifs/res/taylorlab/chavans/roslin_2.4_deliveries/cs_deliveries/all_genelevel//Proj_06058_CFO_ccs_filtered_genelevel_cna_043019.txt:CMO IDs with DMP IDs
+Replaced 2 CMO ids in the new file
+
+s_AML_GCT_2T1	P-0003533-T01-WES
+s_AML_GCT_2T3	P-0003533-T03-WES
+=================== FACETS Purity segment call processing =====================
+
+20190724 17:27:42:Copied  segment file from /ifs/res/taylorlab/chavans/roslin_2.4_deliveries/cs_deliveries/res_Proj_06058_CFO/Proj_06058_CFO_purity_seg_041019.txt to  /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/input
+Replaced 2 CMO ids in the new file
+
+s_AML_GCT_2T1	P-0003533-T01-WES
+s_AML_GCT_2T3	P-0003533-T03-WES
+20190724 17:27:42:Replaced in /ifs/res/taylorlab/chavans/roslin_2.4_deliveries/cs_deliveries/res_Proj_06058_CFO/Proj_06058_CFO_purity_seg_041019.txt:CMO IDs with DMP IDs
+=================== FACETS WGD call  processing ==========================
+
+20190724 17:27:42:Copied ALL WGD calls from /ifs/res/taylorlab/chavans/roslin_2.4_deliveries/all_comb_mafs/WES_facets_estimates_WGD.v2.txt to  /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/input
+Replaced 2 CMO ids in the new file
+
+s_AML_GCT_2T1	P-0003533-T01-WES
+s_AML_GCT_2T3	P-0003533-T03-WES
+=================== Mutational Signature call  processing ==========================
+
+20190724 17:27:42:Copied mutational signature calls from /ifs/res/taylorlab/chavans/roslin_2.4_deliveries/signatures/Proj_06058_CFO_fil_top3list_022119.txt to  /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/input
+Replaced 0 CMO ids in the new file
+
+
+==================== Rscript command =========================
+
+Rscript command : Rscript  port_script_jon.R 06058_CFO /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/output/Proj_06058_CFO_ccs_filtered_genelevel_cna_043019.txt_MAPPED /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/output/Proj_06058_CFO_final_comb_ccs_022119.maf_MAPPED  /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/output/WES_facets_estimates_WGD.v2.txt_subset_MAPPED  /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/output/Proj_06058_CFO_purity_seg_041019.txt_MAPPED /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/output/Proj_06058_CFO_fil_top3list_022119.txt_MAPPED /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/output/exome_msi.txt_subset_MAPPED /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/output/data_sample /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/output/data_patient  /ifs/res/taylorlab/pmishra/PORTAL_TEST/portal_files/Proj_06058_CFO/output
