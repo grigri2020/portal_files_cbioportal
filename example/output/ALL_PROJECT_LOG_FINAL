@@ -1,0 +1,5 @@
+PROJECT_ID      CMO_ID  MAF     Gene_level      MSI     Purity  WGD     Signature
+LOG::06058_CFO  s_AML_GCT_2T1   1       1       1       1       1       0    
+LOG::06058_CFO  s_AML_GCT_2T2   0       0       0       0       0       0    
+LOG::06058_CFO  s_AML_GCT_2T3   1       1       1       1       1       0    
+LOG::06058_CFO  s_OA_gct_002_T  0       0       0       0       0       0    
