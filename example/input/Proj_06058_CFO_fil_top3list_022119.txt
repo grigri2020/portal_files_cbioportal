@@ -1,0 +1,2 @@
+Tumor_Sample_Barcode	signatures	mean	conf	Nmut
+s_OA_gct_002_T	23	0.35	0.88	47
