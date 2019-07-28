@@ -203,6 +203,7 @@ foreach my $input_line (@projects){
 
 		  #Change the IDS
 		  my $new_wgd_file		      = $new_proj."/WES_facets_estimates_WGD.v2.txt";
+		  y $new_wgd_changed_file             = subset_file(\$wgd_file, \@cmd_proj_ids );
 		  my $new_wgd_changed_file            = subset_file(\$new_wgd_file, \@cmd_proj_ids );
 		  my ($new_wgd_mapped, $changed_genes)= change_mutation(\$tumor_mapping, \$new_wgd_changed_file, \$output_dir, \$log_file);
 		  my %hash5 = compare_CMO_IDs($changed_genes,\@roslin_orig_cmo_ids,\"WGD");
@@ -512,7 +513,7 @@ sub change_mutation{
 		      chomp $h;
 		      my ($wes, $tumor) = split("\t", $h);
 		      #IF ITS A GENELEVEL CALL THEN CHANGE JUST 1ST WORD
-		      if ($$mut_file =~ m/final_comb_ccs/){
+		      if ($$mut_file =~ m/final_comb/){
 			 $a[15] =~ s/^\s*(.*?)\s*$/$1/;
 		      	if ($a[15] eq $tumor){
 				#print $a[15]."\n";
@@ -549,7 +550,7 @@ sub change_mutation{
 					   $hash{$a[0]} = $wes;
 			           }
 				}
-		       }elsif ($$mut_file =~ m/estimates_WGD.v2.txt/){
+		       }elsif ($$mut_file =~ m/estimates_WGD/){
 			      
 			      #Add header in only this file
 			      $a[0] =~ s/^\s*(.*?)\s*$/$1/;
