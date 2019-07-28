@@ -203,8 +203,8 @@ foreach my $input_line (@projects){
 
 		  #Change the IDS
 		  my $new_wgd_file		      = $new_proj."/WES_facets_estimates_WGD.v2.txt";
-		  y $new_wgd_changed_file             = subset_file(\$wgd_file, \@cmd_proj_ids );
-		  my $new_wgd_changed_file            = subset_file(\$new_wgd_file, \@cmd_proj_ids );
+		  my $new_wgd_changed_file             = subset_file(\$wgd_file, \@cmd_proj_ids );
+		  #my $new_wgd_changed_file            = subset_file(\$new_wgd_file, \@cmd_proj_ids );
 		  my ($new_wgd_mapped, $changed_genes)= change_mutation(\$tumor_mapping, \$new_wgd_changed_file, \$output_dir, \$log_file);
 		  my %hash5 = compare_CMO_IDs($changed_genes,\@roslin_orig_cmo_ids,\"WGD");
 		  push (@type, "WGD");
