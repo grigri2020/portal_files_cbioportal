@@ -15,7 +15,8 @@
           "redacted"         : "/ifs/res/taylorlab/chavans/roslin_2.4_deliveries/redaction_list_022119.txt",
           "data_patient"     : "/ifs/res/taylorlab/chavans/dmp/mskimpact/data_clinical_patient.txt",
           "Tumor_id_mapping" : "/ifs/res/taylorlab/pmishra/PORTAL/Tumor_id_mapping",
-          "Roslin_mapping"   : "/ifs/res/taylorlab/pmishra/PORTAL/latest_roslin_runs_v241_WES_20190306.txt"
+          "Roslin_mapping"   : "/ifs/res/taylorlab/res_Proj_set_06058_CFO/Proj_set_06058_CFO/inputs/Proj_06058_CFO_sample_mapping.txt",
+	  "CMO_PM_mapping" :  "/ifs/res/taylorlab/pmishra/PORTAL/latest_roslin_runs_v241_WES_20190306.txt"
 	  }]
         }
 	

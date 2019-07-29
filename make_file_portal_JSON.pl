@@ -37,8 +37,10 @@ open(LOG2, ">ALL_PROJECT_LOG_FINAL");
 foreach my $input_line (@projects){
 	my ($proj, $JSON_file) = split("\t", $input_line);
 	chomp $proj;
-	my $new_p = "Proj_".$proj;
-	my %hash_log = (); 
+	my $new_p          = "Proj_".$proj;
+	my %hash_log 	   = (); 
+	my %hash_count_out = ();
+	my %hash_count_in  = ();
 	my @type;
 
 	my $json_exome = read_config_file(\$JSON_file);
@@ -62,7 +64,7 @@ foreach my $input_line (@projects){
 	my @new_checks = read_file(\$CMO_PM_mapping);
 	#making roslin mapping file:
 	print "Making the tumor id mapping file from ROSLIN mapping file: $roslin_mapping\n";
-	my @roslin_mapping_list = roslin_mapping(\$roslin_mapping);
+	my @roslin_mapping_list = uniq(roslin_mapping(\$roslin_mapping));
 
 
 	#Write the roslin mapping to a temp  file and use that as a tumor_mapping  file
@@ -80,7 +82,8 @@ foreach my $input_line (@projects){
 	my $temp_roslin_mapping_red = "temp_roslin_mapping_redacted";
 	my @redaction_list          = read_file(\$redacted);
 	if (scalar(@redaction_list) >= 1){
-	 		my @red_roslin_mapping = remove_redacted_samples(\$redacted, \$temp_roslin_mapping);
+			#Added uniq because sometimes the ROSLIN Mapping file has multiple lines of this
+	 		my @red_roslin_mapping = uniq(remove_redacted_samples(\$redacted, \$temp_roslin_mapping));
 	 		write_file(\@red_roslin_mapping, \$temp_roslin_mapping_red);
 	 		$tumor_mapping = $temp_roslin_mapping_red;
 	 		print "The mapping file used is: $temp_roslin_mapping_red\n";
@@ -134,10 +137,17 @@ foreach my $input_line (@projects){
 		#print "ROSLIN ORIGINAL IDS :@roslin_orig_cmo_ids\n";
 		#MUTATION CALL FILES 
 		`cp $mutation_file $new_proj`;
+
+		 #Count the original number of samples that are input before changing to Sample ID. 
+		 #Inputs  the file name and column number
+		 my $cnt_file            =  count_input_samples(\$mutation_file,\"16", \"MAF", \%hash_count_in);
+
+		 print "COUNT in s_C_E4UHYD_M001_d ". $hash_count_in{"MAF"}{"s_C_E4UHYD_M001_d"}."\n";
 		 print "Copied mutation file:$mutation_file to $input_dir\n";
 		 write_log (\$log_file, \"=================== Mutation file processing =====================\n");
 		 write_log (\$log_file, \"Copied  MAF/mutation file from $mutation_file to  $pwd/$new_proj");
-
+		 write_log (\$log_file, \"Count of samples in $mutation_file: $$cnt_file\n");
+		 
 
 		 #remove_redactioons(\@redacted);
 
@@ -145,7 +155,7 @@ foreach my $input_line (@projects){
 		 my $new_mut_file                    = find_input_files(\$new_proj,\"final_comb");
 		
 		 #my $new_mut_file                    = $new_proj."/Proj_".$proj."_final_comb_ccs_022119.maf";
-		 my ($new_mut_mapped, $changed_muts, $maf_count) = change_mutation(\$tumor_mapping, \$new_mut_file, \$output_dir, \$log_file);
+		 my ($new_mut_mapped, $changed_muts, $maf_count) = change_mutation(\$tumor_mapping, \$new_mut_file, \$output_dir, \$log_file, \%hash_count_out);
 		 write_log (\$log_file, \"Replaced in $$new_mut_mapped:CMO IDs with DMP IDs");
 		 #print "COMPARING CMO IDS\n";
 		 my %hash1 = compare_CMO_IDs($changed_muts,\@roslin_orig_cmo_ids,\"MAF"); 
@@ -164,10 +174,13 @@ foreach my $input_line (@projects){
 
 		 #GENE LEVEL CALLS
 		 `cp $gene_level_calls $new_proj`;
+
+		 my $cnt_file     =  count_input_samples(\$gene_level_calls,\"1", \"Gene_level", \%hash_count_in);
+		 print "COUNT in s_C_E4UHYD_M00`1_d ". $hash_count_in{"Gene_level"}{"s_C_E4UHYD_M001_d"}."\n";
 		 print "Copied genelevel facets calls: $gene_level_calls to $pwd/$new_proj\n";
 		 write_log (\$log_file, \"=================== FACETS Gene Level call  processing =====================\n");
 		 write_log (\$log_file, \"Copied  Gene level calls from $gene_level_calls to  $pwd/$new_proj");
-
+		 write_log (\$log_file, \"Count of samples in $gene_level_calls: $$cnt_file\n");
 
 		 #find the ids that correspond to this project
 		 my @cmd_proj_ids   =  find_ids_for_project(\$gene_level_calls);
@@ -180,7 +193,7 @@ foreach my $input_line (@projects){
 		 #my $new_gene_file   		       = $new_proj."/Proj_".$proj."_ccs_filtered_genelevel_cna.txt";
 		 my $new_gene_file                     = find_input_files(\$new_proj,\"genelevel_cna");
 		 #print "NEW GENEVEL $new_gene_file\n";
-		 my ($new_gene_mapped, $changed_genes, $genelevel_count) = change_mutation(\$tumor_mapping, \$new_gene_file, \$output_dir, \$log_file);
+		 my ($new_gene_mapped, $changed_genes, $genelevel_count) = change_mutation(\$tumor_mapping, \$new_gene_file, \$output_dir, \$log_file, \%hash_count_out);
 		 print "MAPPED : $$new_gene_mapped\n";
 		 write_log (\$log_file, \"Replaced in $gene_level_calls:CMO IDs with DMP IDs");
 		 print "REPLACE ALL IDS $$new_gene_mapped  $$new_gene_mapped $$changed_genes \n";
@@ -189,28 +202,33 @@ foreach my $input_line (@projects){
 		 my %hash2 = compare_CMO_IDs($changed_genes,\@roslin_orig_cmo_ids,\"Gene_level");
 		 push (@type, "Gene_level");
 		 $hash_log{"Gene_level"} = {%hash2};
-		#EXOME MSI FILE
-		#Subset the original MSI score files from CMO IDs and then replace with DMP ids
-		print "SUBSETTING MSI SCORES: $msi_score\n\n";
-                my $new_msi_score            = subset_file(\$msi_score, \@cmd_proj_ids );
-		print "NEW MSI SCORE MADE : $new_msi_score\n";
-		my ($msi_file, $msi_changed_samples,$msi_count) = change_mutation(\$tumor_mapping, \$new_msi_score, \$output_dir, \$log_file);
-		my  %hash3 = compare_CMO_IDs($msi_changed_samples,\@roslin_orig_cmo_ids,\"MSI");
-		push (@type, "MSI");
-		$hash_log{"MSI"} = {%hash3};
+		 #EXOME MSI FILE
+		 #Subset the original MSI score files from CMO IDs and then replace with DMP ids
+		 print "SUBSETTING MSI SCORES: $msi_score\n\n";
+                 my $new_msi_score            = subset_file(\$msi_score, \@cmd_proj_ids );
+		 print "NEW MSI SCORE MADE : $new_msi_score\n";
+		 my ($msi_file, $msi_changed_samples,$msi_count) = change_mutation(\$tumor_mapping, \$new_msi_score, \$output_dir, \$log_file, \%hash_count_out);
+		 my  %hash3 = compare_CMO_IDs($msi_changed_samples,\@roslin_orig_cmo_ids,\"MSI");
+		 push (@type, "MSI");
+		 $hash_log{"MSI"} = {%hash3};
 
 		 #FACETS PURITY SEGMENTATION FILE
 		 `cp $purity_seg  $new_proj`;
+
+		  my $cnt_file          =   count_input_samples(\$purity_seg,\"1",\"Purity", \%hash_count_in);
+		  print "COUNT in s_C_E4UHYD_M001_d ". $hash_count_in{"Purity"}{"s_C_E4UHYD_M001_d"}."\n";
 		  my $time                                   = getLogTime();
 		  print "$time:Copied purity facets calls : $purity_seg to $input_dir\n";
 		  write_log (\$log_file, \"=================== FACETS Purity segment call processing =====================\n");
 		  write_log (\$log_file, \"$time:Copied  segment file from $purity_seg to  $pwd/$new_proj");
+		  write_log (\$log_file, \"Count of samples in $purity_seg: $$cnt_file\n");
+
 
 		  #Change the IDS
 		  my $time                                   = getLogTime();
 		  my $new_purityseg_file                     = find_input_files(\$new_proj,\"purity_seg");
 		  #my $new_purityseg_file                     = $new_proj."/Proj_".$proj."_purity_seg.txt";
-		  my ($new_purityseg_mapped, $changed_genes, $purity_count) = change_mutation(\$tumor_mapping, \$new_purityseg_file, \$output_dir, \$log_file);
+		  my ($new_purityseg_mapped, $changed_genes, $purity_count) = change_mutation(\$tumor_mapping, \$new_purityseg_file, \$output_dir, \$log_file, \%hash_count_out);
 		  write_log (\$log_file, \"$time:Replaced in $purity_seg:CMO IDs with DMP IDs");
 		  my %hash4 = compare_CMO_IDs($changed_genes,\@roslin_orig_cmo_ids,\"Purity");
 		  push (@type, "Purity");
@@ -218,32 +236,39 @@ foreach my $input_line (@projects){
 
 		  #FACETS WGD CALLS
 		  `cp $wgd_file $new_proj`;
+
+		  my $cnt_file				     = count_input_samples(\$wgd_file,\"1",\"WGD", \%hash_count_in);
+		  print "COUNT in s_C_E4UHYD_M001_d ". $hash_count_in{"WGD"}{"s_C_E4UHYD_M001_d"}."\n";
 		  my $time                                   = getLogTime();
 		  print "$time:Copied WGD calls : $wgd_file to $input_dir\n";
 
 		  #find the ids that correspond to this project
 		  write_log (\$log_file, \"=================== FACETS WGD call  processing ==========================\n");
 		  write_log (\$log_file, \"$time:Copied ALL WGD calls from $wgd_file to  $pwd/$new_proj");
-
+		  write_log (\$log_file, \"Count of samples in $wgd_file: $$cnt_file\n");
 		  #Change the IDS
 		  my $new_wgd_file		      = $new_proj."/WES_facets_estimates_WGD.v2.txt";
 		  my $new_wgd_changed_file             = subset_file(\$wgd_file, \@cmd_proj_ids );
 		  #my $new_wgd_changed_file            = subset_file(\$new_wgd_file, \@cmd_proj_ids );
-		  my ($new_wgd_mapped, $changed_genes)= change_mutation(\$tumor_mapping, \$new_wgd_changed_file, \$output_dir, \$log_file);
+		  my ($new_wgd_mapped, $changed_genes)= change_mutation(\$tumor_mapping, \$new_wgd_changed_file, \$output_dir, \$log_file,  \%hash_count_out);
 		  my %hash5 = compare_CMO_IDs($changed_genes,\@roslin_orig_cmo_ids,\"WGD");
 		  push (@type, "WGD");
 		  $hash_log{"WGD"} = {%hash5};
 		 #SIGNATURE CALLS
 		 `cp $signature_calls $new_proj`;
+		 
+		 my $cnt_file                               = count_input_samples(\$signature_calls,\"1", \"Signature", \%hash_count_in);
 		 my $time                                   = getLogTime();
 		 print "$time:Copied signature for each project : $signature_calls to $input_dir\n";
 		 write_log (\$log_file, \"=================== Mutational Signature call  processing ==========================\n");
 		 write_log (\$log_file, \"$time:Copied mutational signature calls from $signature_calls to  $pwd/$new_proj");
+		 write_log (\$log_file, \"Count of samples in $signature_calls: $cnt_file\n");
+
 
 		#Change the IDs
 		#my $new_signature_file                     = $new_proj."/Proj_".$proj."_fil_top3list_022119.txt";
 		my $new_signature_file                      = find_input_files(\$new_proj,\"fil_top3list");
-		my ($new_signature_mapped, $changed_genes) = change_mutation(\$tumor_mapping, \$new_signature_file, \$output_dir, \$log_file);
+		my ($new_signature_mapped, $changed_genes) = change_mutation(\$tumor_mapping, \$new_signature_file, \$output_dir, \$log_file,  \%hash_count_out);
 		my %hash6 = compare_CMO_IDs($changed_genes,\@roslin_orig_cmo_ids,\"Signature");	
 		#put_dummy_variables($new_signature_mapped, \$output_dir);
 		push (@type, "Signature");
@@ -254,7 +279,7 @@ foreach my $input_line (@projects){
 
 		print Dumper \%hash_log;
 
-
+			
 		        print LOG2 "PROJECT_ID\t";
 			print LOG2 "CMO_ID\t";
 			print LOG2 join ("\t", @type);
@@ -262,7 +287,10 @@ foreach my $input_line (@projects){
 			foreach my $keys (sort @roslin_orig_cmo_ids){
 				print LOG2 "LOG::$proj\t$keys\t";
 				for(my $i =0; $i<=$#type; $i++){
-					print LOG2 "$hash_log{$type[$i]}{$keys}\t";
+					print LOG2 "$hash_log{$type[$i]}{$keys}:";
+					print LOG2  "$hash_count_in{$type[$i]}{$keys}\t";
+					print LOG2  "$hash_count_out{$type[$i]}{$keys}:";
+					#print "$type[$i]\t$hash_count_out{ $type[$i]}{$keys}\n";
 		#ddMSI scores
 			}
 			print LOG2 "\n";
@@ -514,9 +542,10 @@ sub change_mutation{
 	my $mut_file   = shift;
 	my $output_dir = shift;	
 	my $log_file   = shift;
+	my $hash_cnt   = shift; 
 
 	my @replaced_values;
-	my %hash   =();
+	my %hash       = ();
 
 
 	#Replace the ids in the mutation file
@@ -538,10 +567,11 @@ sub change_mutation{
 		      my ($wes, $tumor) = split("\t", $h);
 		      #IF ITS A GENELEVEL CALL THEN CHANGE JUST 1ST WORD
 		      if ($$mut_file =~ m/final_comb/){
-			 $a[15] =~ s/^\s*(.*?)\s*$/$1/;
+			$a[15] =~ s/^\s*(.*?)\s*$/$1/;
 		      	if ($a[15] eq $tumor){
-				#print $a[15]."\n";
 			 s/$a[15]/$wes/g;
+			 increase_count($hash_cnt,\"MAF", \$a[15]); 
+			 
 			 #s/$a[16]/$wes/g;
 			 print WRITE $_."\n";
 			 push (@replaced_values, $a[15]);
@@ -555,6 +585,7 @@ sub change_mutation{
 			  #print $a[1]."--";
 			  if ($a[0] eq $tumor){
 				s/$a[0]/$wes/g;
+				increase_count($hash_cnt, \"Gene_level", \$a[0]);
 				#my $new_str = make_string(\$_,\$wes); 
 			   	print WRITE $_."\n";
 				$a[0] =~ s/^\s*(.*?)\s*$/$1/;
@@ -567,6 +598,7 @@ sub change_mutation{
 			        $a[0] =~ s/^\s*(.*?)\s*$/$1/;
 		       		if ($a[0] eq $tumor){
 			           s/$a[0]/$wes/g;
+				   increase_count($hash_cnt, \"Purity", \$a[0]);
 				   print WRITE $_."\n";
 				   push (@replaced_values, $a[0]);
 				   $a[0] =~ s/^\s*(.*?)\s*$/$1/;
@@ -580,6 +612,7 @@ sub change_mutation{
 			      $a[0] =~ s/^\s*(.*?)\s*$/$1/;
 			      if ($a[0] eq $tumor){
 				 s/$a[0]/$wes/g;
+				 increase_count($hash_cnt,\"WGD", \$a[0]);
 			         print WRITE $_."\n";
 				 $hash{$a[0]} = $wes;
 				 push (@replaced_values, $a[0]);
@@ -588,6 +621,7 @@ sub change_mutation{
 			       $a[0] =~ s/^\s*(.*?)\s*$/$1/;
 			       if  ($a[0] eq $tumor){
 				s/$a[0]/$wes/g;
+				increase_count($hash_cnt, \"Signature", \$a[0]);
 				print WRITE $_."\n";
 				$hash{$a[0]} = $wes;
 				push (@replaced_values, $a[0]);
@@ -600,6 +634,7 @@ sub change_mutation{
 
 				if  ($a[0] eq $tumor){
 					s/$a[0]/$wes/g;
+					increase_count($hash_cnt,\"MSI", \$a[0]);
 					print WRITE $_."\n";
 					$hash{$a[0]} = $wes;
 					push (@replaced_values, $a[0]);
@@ -607,7 +642,16 @@ sub change_mutation{
 			}else{ }
 		      }
 		}
+	
 		}
+	foreach my $keys ( keys %hash){
+		                        print "$$mut_file\t$hash{$keys}\t$keys\n";
+	}   
+
+	foreach my $key ( keys %$hash_cnt){
+		 
+		#print "NEWWW $$mut_file\t$hash_count{"MSI"}{$key}\t$key\n";
+	}
 
 close(WRITE);
 close(FILE);
@@ -873,6 +917,49 @@ sub roslin_mapping{
 		push(@tumor_id_mapping,"$sample_id\t$roslin_l[1]");
 	}
 	return  @tumor_id_mapping;
+}
+
+#Increase count of hash which has sample counts
+sub increase_count{
+	my $hash   =  shift;
+	my $type   =  shift;
+	my $sample =  shift;
+	
+
+	if ( exists $hash->{$$type}->{$$sample}){
+
+		$hash->{$$type}->{$$sample}++;
+	}else{
+		$hash->{$$type}->{$$sample} = 1;
+	}
+	#print  "$$sample\t$hash->{$$type}->{$$sample}\n";
+}
+
+#Count  the number of input CMO id before changing it to Sample ID
+sub count_input_samples{
+	my $file 	= shift;
+	my $column 	= shift;
+	my $type        = shift;
+	my $hash_c      = shift;
+
+	my $cmd = "awk  -F \"\\t\" \'{ print \$". $$column." }\' $$file | grep -v  Tumor | sort";
+	print "Counting the number of input samples to change in $$file:";
+	print "$cmd\n";
+
+	#Get  all the samples
+	my  @result  = `$cmd`;
+
+	#Count how many  samples
+	foreach my $line (@result){
+		chomp $line;
+		increase_count($hash_c,  $type,\$line);
+		#print $hash_c->{$$type}->{$line}."\t";
+	}	
+
+	#Count how many samples were found
+	my  $cnt_file  = uniq(@result);
+	print "$cnt_file\n";
+	return  (\$cnt_file);
 }
 
 #WRITE array to a file
