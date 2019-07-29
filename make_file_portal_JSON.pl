@@ -142,7 +142,7 @@ foreach my $input_line (@projects){
 		 #Inputs  the file name and column number
 		 my $cnt_file            =  count_input_samples(\$mutation_file,\"16", \"MAF", \%hash_count_in);
 
-		 print "COUNT in s_C_E4UHYD_M001_d ". $hash_count_in{"MAF"}{"s_C_E4UHYD_M001_d"}."\n";
+		 #print "COUNT in s_C_E4UHYD_M001_d ". $hash_count_in{"MAF"}{"s_C_E4UHYD_M001_d"}."\n";
 		 print "Copied mutation file:$mutation_file to $input_dir\n";
 		 write_log (\$log_file, \"=================== Mutation file processing =====================\n");
 		 write_log (\$log_file, \"Copied  MAF/mutation file from $mutation_file to  $pwd/$new_proj");
