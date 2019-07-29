@@ -25,7 +25,7 @@ my @projects   = read_file(\$ARGV[0]);
 
 
 #NEW WAYS
-#my @new_checks = read_file(\"latest_roslin_runs_v241_WES_20190306.txt");
+my @new_checks = read_file(\"latest_roslin_runs_v241_WES_20190306.txt");
 
 #This is where I am 
 my $pwd =`pwd`;chomp $pwd;
@@ -36,7 +36,11 @@ open(LOG2, ">ALL_PROJECT_LOG_FINAL");
 #Also write into the log
 foreach my $input_line (@projects){
 	my ($proj, $JSON_file) = split("\t", $input_line);
-	print "$JSON_file\n";
+	chomp $proj;
+	my $new_p = "Proj_".$proj;
+	my %hash_log = (); 
+	my @type;
+
 	my $json_exome = read_config_file(\$JSON_file);
 
 	########## from JSON file  ####################
@@ -52,18 +56,29 @@ foreach my $input_line (@projects){
 	my $data_sample      = $json_exome->{"input_dir"}[0]->{"data_sample"};
 	my $data_patient     = $json_exome->{"input_dir"}[0]->{"data_patient"};
 	my $tumor_mapping    = $json_exome->{"input_dir"}[0]->{"Tumor_id_mapping"};
-	my $roslin_mapping    = $json_exome->{"input_dir"}[0]->{"Roslin_mapping"};
+	my $roslin_mapping   = $json_exome->{"input_dir"}[0]->{"Roslin_mapping"};
+	my $CMO_PM_mapping   = $json_exome->{"input_dir"}[0]->{"CMO_PM_mapping"};
+
+	my @new_checks = read_file(\$CMO_PM_mapping);
+	#making roslin mapping file:
+	print "Making the tumor id mapping file from ROSLIN mapping file: $roslin_mapping\n";
+	my @roslin_mapping_list = roslin_mapping(\$roslin_mapping);
 
 
-	my @new_checks = read_file(\$roslin_mapping);
-	chomp $proj;
-	my $new_p = "Proj_".$proj;
-	my %hash_log = ();
-	my @type;
+	#Write the roslin mapping to a temp  file 
+	my $temp_roslin_mapping = "temp_roslin_mapping";
+	write_file(\@roslin_mapping_list, \$temp_roslin_mapping);
+
 	#my $tumor_mapping = "Proj_07250_X_mapping";
 	#my $tumor_mapping = "Tumor_id_mapping";
 	#$hash_log{'Project'} = $proj;
 	
+	#Override the tumor_mapping file from JSON  if roslin_mapping file is specified
+	if (-e $roslin_mapping){
+		$tumor_mapping = $temp_roslin_mapping;
+		print "The mapping file used is: $temp_roslin_mapping\n";
+	}
+
 	my @redacted = redaction_list(\$new_p, \$redacted );
 	#Make directories:
 	my $log     = "log";
@@ -157,7 +172,7 @@ foreach my $input_line (@projects){
 		 my $new_gene_file                     = find_input_files(\$new_proj,\"genelevel_cna");
 		 #print "NEW GENEVEL $new_gene_file\n";
 		 my ($new_gene_mapped, $changed_genes, $genelevel_count) = change_mutation(\$tumor_mapping, \$new_gene_file, \$output_dir, \$log_file);
-		 print "MAPPED : $new_gene_mapped\n";
+		 print "MAPPED : $$new_gene_mapped\n";
 		 write_log (\$log_file, \"Replaced in $gene_level_calls:CMO IDs with DMP IDs");
 		 print "REPLACE ALL IDS $$new_gene_mapped  $$new_gene_mapped $$changed_genes \n";
 		 replace_all_ids($changed_genes, $new_gene_mapped); 
@@ -800,4 +815,40 @@ sub find_input_files{
 	my @a = qx{ ls $$input/*$$type*};
 	chomp $a[0];
 	return $a[0];
+}
+
+#Make a tumor  id_mapping file from the  roslin pairing file
+sub roslin_mapping{
+	my $file    = shift;
+	my @mapping =  read_file($file);
+	my @tumor_id_mapping  = ();
+
+	#This ROSLIN mapping file is of the format:
+	#_1      s_C_3RWYMM_P001_d       JAX_0269_BH3CCWBBXY     /ifs/archive/GCL/hiseq/FASTQ/JAX_0269_BH3CCWBBXY/Project_09371_B/Sample_P-0004137-T01-WES_IGO_09371_B_17        PE  
+	#_1      s_C_3RWYMM_P001_d       PITT_0309_BH3CLLBBXY    /ifs/archive/GCL/hiseq/FASTQ/PITT_0309_BH3CLLBBXY/Project_09371_B/Sample_P-0004137-T01-WES_IGO_09371_B_17       PE 
+
+	foreach  my $line(@mapping){
+		chomp $line;
+
+		my @roslin_l      = split("\t", $line); chomp $roslin_l[3];
+		my $basename      = basename(dirname("$roslin_l[3]/*"));
+
+		
+		my ($sample, $sample_id, undef, undef, undef, undef) = split("_", $basename);
+		push(@tumor_id_mapping,"$sample_id\t$roslin_l[1]");
+	}
+	return  @tumor_id_mapping;
+}
+
+#WRITE array to a file
+sub write_file{
+	my $arr  = shift;
+	my $file = shift;
+
+	open(WRITE, ">$$file");
+	foreach my $l (@$arr){
+		chomp $l;
+		print WRITE "$l\n";
+	}
+	close(WRITE);
 }
