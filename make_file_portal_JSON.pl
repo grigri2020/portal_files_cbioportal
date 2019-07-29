@@ -65,13 +65,10 @@ foreach my $input_line (@projects){
 	my @roslin_mapping_list = roslin_mapping(\$roslin_mapping);
 
 
-	#Write the roslin mapping to a temp  file 
+	#Write the roslin mapping to a temp  file and use that as a tumor_mapping  file
 	my $temp_roslin_mapping = "temp_roslin_mapping";
 	write_file(\@roslin_mapping_list, \$temp_roslin_mapping);
-
-	#my $tumor_mapping = "Proj_07250_X_mapping";
-	#my $tumor_mapping = "Tumor_id_mapping";
-	#$hash_log{'Project'} = $proj;
+	
 	
 	#Override the tumor_mapping file from JSON  if roslin_mapping file is specified
 	if (-e $roslin_mapping){
@@ -79,7 +76,19 @@ foreach my $input_line (@projects){
 		print "The mapping file used is: $temp_roslin_mapping\n";
 	}
 
-	my @redacted = redaction_list(\$new_p, \$redacted );
+	#Remove samples from redaction list and make that file as the mapping file (only if there are redactions):
+	my $temp_roslin_mapping_red = "temp_roslin_mapping_redacted";
+	my @redaction_list          = read_file(\$redacted);
+	if (scalar(@redaction_list) >= 1){
+	 		my @red_roslin_mapping = remove_redacted_samples(\$redacted, \$temp_roslin_mapping);
+	 		write_file(\@red_roslin_mapping, \$temp_roslin_mapping_red);
+	 		$tumor_mapping = $temp_roslin_mapping_red;
+	 		print "The mapping file used is: $temp_roslin_mapping_red\n";
+	 	}else{
+			print "The mapping file used is: $temp_roslin_mapping\n";
+	}
+
+	#my @redacted = redaction_list(\$new_p, \$redacted );
 	#Make directories:
 	my $log     = "log";
 	my $input   = "input";
@@ -793,6 +802,32 @@ sub redaction_list{
 	return  @redaction;
 
 }
+
+#Remove the redacted  samples from the mapping file
+sub remove_redacted_samples{
+	my $file      = shift;
+	my $mapping   = shift;
+	my @new_list ;
+	 
+	#Read the  roslin mapping file (sampleid\tcmoid) and redacted file
+	my @redacted_samples = read_file($file);
+	my @map_list         = read_file($mapping);
+	 	
+	#make a new array from the redacted list
+	foreach my $red (@redacted_samples){
+		foreach my $sam (@map_list){
+			my ($samid, $cmoid) = split("\t", $sam);
+			if ($red eq $cmoid) {
+			}else{
+				push (@new_list, $sam);
+			}
+			}
+		}
+	#print  $new_list[0]."\n";
+	return @new_list;
+}
+
+
 
 sub remove_redactions{
 	my $redact_arr = shift;
