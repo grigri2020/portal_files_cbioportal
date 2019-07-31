@@ -288,8 +288,8 @@ foreach my $input_line (@projects){
 				print LOG2 "LOG::$proj\t$keys\t";
 				for(my $i =0; $i<=$#type; $i++){
 					print LOG2 "$hash_log{$type[$i]}{$keys}:";
-					print LOG2  "$hash_count_in{$type[$i]}{$keys}\t";
-					print LOG2  "$hash_count_out{$type[$i]}{$keys}:";
+					print LOG2  "$hash_count_in{$type[$i]}{$keys}:";
+					print LOG2  "$hash_count_out{$type[$i]}{$keys}\t";
 					#print "$type[$i]\t$hash_count_out{ $type[$i]}{$keys}\n";
 		#ddMSI scores
 			}
