@@ -11,25 +11,25 @@ my @projects = read_file(\$ARGV[0]);
 read_config_file(\"Exome_info.json");
 
 ########## ALL HARD CODED ####################
-my $cs_delivery   = "/ifs/res/taylorlab/chavans/roslin_2.4_deliveries/cs_deliveries/res_Proj_";
-my $cs_delivery_g = "/ifs/res/taylorlab/chavans/roslin_2.4_deliveries/cs_deliveries/all_genelevel/";
-my $wgd_delivery  = "/ifs/res/taylorlab/chavans/roslin_2.4_deliveries/all_comb_mafs/";
-my $signatures    = "/ifs/res/taylorlab/chavans/roslin_2.4_deliveries/signatures/Proj_";
-my $redacted      = "/ifs/res/taylorlab/chavans/roslin_2.4_deliveries/redaction_list_022119.txt";
-my $msi_score     = "/ifs/res/taylorlab/chavans/roslin_2.4_deliveries/all_comb_mafs/exome_msi.txt";
-my $data_sample	  = "/ifs/res/taylorlab/chavans/dmp/mskimpact/data_clinical_sample.txt";
-my $data_patient  = "/ifs/res/taylorlab/chavans/dmp/mskimpact/data_clinical_patient.txt";
+my $cs_delivery   = "XXXXProj_";
+my $cs_delivery_g = "XXXXgenelevel/";
+my $wgd_delivery  = "XXXXcomb_mafs/";
+my $signatures    = "XXXoj_";
+my $redacted      = "XXXXion_list_022119.txt";
+my $msi_score     = "XXXX_msi.txt";
+my $data_sample	  = "XXXXal_sample.txt";
+my $data_patient  = "XXXX_patient.txt";
 
 
 
 #NEW WAYS
-my @new_checks = read_file(\"latest_roslin_runs_v241_WES_20190306.txt");
+my @new_checks = read_file(\"XXXX90306.txt");
 
 #This is where I am 
 my $pwd =`pwd`;chomp $pwd;
 
 
-open(LOG2, ">ALL_PROJECT_LOG_FINAL_June05_project_set_08392_D");
+open(LOG2, ">ALL_PROJECT_LOG_FINAL_June05_project_D");
 #Loop through each project and collect the input files and then run the R script for the output file.
 #Also write into the log
 foreach my $proj (@projects){
@@ -38,7 +38,7 @@ foreach my $proj (@projects){
 	my $new_p = "Proj_".$proj;
 	my %hash_log = ();
 	my @type;
-	#my $tumor_mapping = "Proj_07250_X_mapping";
+	#my $tumor_mapping = "Proj_X_mapping";
 	my $tumor_mapping = "Tumor_id_mapping";
 	#$hash_log{'Project'} = $proj;
 	
@@ -59,15 +59,15 @@ foreach my $proj (@projects){
 	
 	#Define files that need to be copied 
 	print "================================= Proj_$proj ===============================\n";
-	my $mutation_file    = define_input_files(\$cs_delivery, \$proj, \"final_comb_ccs_022119.maf");
-	my $gene_level_calls = define_input_files(\$cs_delivery_g,\$proj,\"ccs_filtered_genelevel_cna_043019.txt");
-	my $purity_seg       = define_input_files(\$cs_delivery,\$proj,\"purity_seg_061119.txt");
-	my $signature_calls  = define_input_files(\$signatures,\$proj,\"fil_top3list_022119.txt");
+	my $mutation_file    = define_input_files(\$cs_delivery, \$proj, \"22119.maf");
+	my $gene_level_calls = define_input_files(\$cs_delivery_g,\$proj,\"a_043019.txt");
+	my $purity_seg       = define_input_files(\$cs_delivery,\$proj,\"61119.txt");
+	my $signature_calls  = define_input_files(\$signatures,\$proj,\"_022119.txt");
 	#my $msi_calls        = define_input_files(\$wgd_delivery,\$proj,\"exome_msi.txt");
 
         print "$gene_level_calls\n";	
 	#Only for WGD give the  direct file
-	my $wgd_file         = $wgd_delivery."/WES_facets_estimates_WGD.v2.txt";
+	my $wgd_file         = $wgd_delivery."/WGD.v2.txt";
 
 	#just say it exists:
 	if (-e $wgd_file){
