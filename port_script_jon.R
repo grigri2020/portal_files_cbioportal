@@ -9,13 +9,13 @@ library(stringr)
 #######################################################################################################################
 
 ### Load cohort data
-#setwd('/ifs/res/taylorlab/chavans/gist')
+
 args = commandArgs(trailingOnly=TRUE)
 
 #Arguments 8 AND 9 ARE data_clinical and data_sample
 output_folder = args[10]
 #output_folder = paste(args[6],"/output/", sep="")
-#msi<-fread('/ifs/res/taylorlab/chavans/roslin_2.4_deliveries/all_comb_mafs/exome_msi.txt')
+#msi<-fread('XXXX_msi.txt')
 msi<-fread(args[7])
 names(msi)[1] = "Tumor_Sample_Barcode"
 names(msi)[4] = "MSIscore"
